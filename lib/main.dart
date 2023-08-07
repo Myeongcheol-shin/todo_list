@@ -13,6 +13,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final textController = TextEditingController();
   int _selectedIndex = 0;
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black);
@@ -39,79 +40,137 @@ class _MyAppState extends State<MyApp> {
     List<double> dragStartX =
         List.generate(itemExpanded.length, (index) => 0.0);
 
-    return MaterialApp(
-        home: Scaffold(
-            bottomNavigationBar: BottomNavigationBar(
-              items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.list),
-                  label: 'List',
-                ),
-              ],
-              currentIndex: _selectedIndex,
-              selectedItemColor: const Color.fromARGB(255, 255, 141, 141),
-              onTap: _onItemTapped,
-            ),
-            floatingActionButton: SizedBox(
-              width: 70,
-              height: 70,
-              child: FloatingActionButton(
-                onPressed: () {},
-                backgroundColor: Colors.pink[100],
-                child: const Icon(
-                  Icons.add_rounded,
-                  size: 50,
-                ),
+    return MaterialApp(home: Builder(builder: (BuildContext context) {
+      return Scaffold(
+          bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.list),
+                label: 'List',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            selectedItemColor: const Color.fromARGB(255, 255, 141, 141),
+            onTap: _onItemTapped,
+          ),
+          floatingActionButton: SizedBox(
+            width: 70,
+            height: 70,
+            child: FloatingActionButton(
+              onPressed: () {
+                showTodoModalBottomSheet(context);
+              },
+              backgroundColor: Colors.pink[100],
+              child: const Icon(
+                Icons.add_rounded,
+                size: 50,
               ),
             ),
-            floatingActionButtonLocation:
-                FloatingActionButtonLocation.centerDocked,
-            body: Column(
-              children: [
-                Stack(
-                  children: <Widget>[
-                    SizedBox(
-                        width: double.infinity,
-                        height: 180,
-                        child: CustomPaint(
-                          painter: WavePainter(),
-                        )),
-                    const Positioned(
-                      left: 15,
-                      bottom: 80,
-                      child: Text(
-                        "TO-DO LIST",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 30,
-                            fontWeight: FontWeight.w800),
-                      ),
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
+          body: Column(
+            children: [
+              Stack(
+                children: <Widget>[
+                  SizedBox(
+                      width: double.infinity,
+                      height: 180,
+                      child: CustomPaint(
+                        painter: WavePainter(),
+                      )),
+                  const Positioned(
+                    left: 15,
+                    bottom: 80,
+                    child: Text(
+                      "TO-DO LIST",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800),
                     ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 30,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 15),
-                      child: Text(
-                        "today",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w700),
-                      ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 30,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 15),
+                    child: Text(
+                      "today",
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                     ),
-                    sliderWidget(),
-                  ],
+                  ),
+                  sliderWidget(),
+                ],
+              ),
+            ],
+          ));
+    }));
+  }
+
+  void showTodoModalBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
+        context: context,
+        isScrollControlled: true,
+        builder: (context) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 30),
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: Scaffold(
+              body: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    height: 45,
+                    width: double.maxFinite,
+                  ),
+                  const Text("Add New Task",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                      )),
+                  TextField(
+                    style: const TextStyle(fontSize: 20),
+                    controller: textController,
+                  )
+                ],
+              ),
+
+              floatingActionButton: Container(
+                width: 70,
+                height: 70,
+                transform: Matrix4.translationValues(0.0, -30, 0.0),
+                child: FloatingActionButton(
+                  backgroundColor: Colors.pink[100],
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Icon(
+                    Icons.close_rounded,
+                    size: 50,
+                    color: Colors.white,
+                  ),
                 ),
-              ],
-            )));
+              ),
+              // dock it to the center top (from which it is translated)
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.centerTop,
+            ),
+          );
+        });
   }
 
   Slidable sliderWidget() {
