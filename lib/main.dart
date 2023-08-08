@@ -26,6 +26,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<List<TODO>> todayList = Future.value([]);
   Future<List<TODO>> nextDateList = Future.value([]);
+  Future<List<TODO>> allClearList = Future.value([]);
   Future<List<TODO>> allTodoList = Future.value([]);
 
   @override
@@ -34,6 +35,7 @@ class _MyAppState extends State<MyApp> {
     todayList = DatabaseHelper.instance.getToday();
     nextDateList = DatabaseHelper.instance.getNextDay();
     allTodoList = DatabaseHelper.instance.getAllTodo();
+    allClearList = DatabaseHelper.instance.getAllClearTodo();
   }
 
   Color getColor(String type) {
@@ -188,51 +190,97 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       Expanded(
-          child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: FutureBuilder(
-          future: allTodoList,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final todo = snapshot.data!;
-              if (todo.isEmpty) {
-                return const Center(
-                  child: Text(
-                      "No schedule \u{1F602}\nPlease add a new schedule",
-                      style: TextStyle(fontSize: 22)),
-                );
-              }
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "ALL Task",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                  ),
-                  ListView.separated(
-                      padding: const EdgeInsets.only(top: 15),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        final item = todo[index];
-                        return sliderWidget(getColor(item.type), item);
-                      },
-                      separatorBuilder: (context, index) {
-                        return const SizedBox(
-                          height: 8,
-                        );
-                      },
-                      itemCount: todo.length),
-                ],
-              );
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "All finished Task",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                FutureBuilder(
+                  future: allClearList,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final tl = snapshot.data!;
+                      if (tl.isEmpty) {
+                        return Container(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: const Text(
+                              "There's No finished Schedule \u{1F601}",
+                              style: TextStyle(fontSize: 18),
+                            ));
+                      }
+                      return ListView.separated(
+                        padding: const EdgeInsets.only(top: 15),
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: tl.length,
+                        itemBuilder: (context, index) {
+                          final item = tl[index];
+                          return sliderWidget(getColor(item.type), item);
+                        },
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(
+                            height: 8,
+                          );
+                        },
+                      );
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                const Text(
+                  "All Unfinished Task",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                FutureBuilder(
+                  future: allTodoList,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final tl = snapshot.data!;
+                      if (tl.isEmpty) {
+                        return Container(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: const Text(
+                              "There's No unfinished Schedule \u{1F606}",
+                              style: TextStyle(fontSize: 18),
+                            ));
+                      }
+                      return ListView.separated(
+                        padding: const EdgeInsets.only(top: 15),
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: tl.length,
+                        itemBuilder: (context, index) {
+                          final item = tl[index];
+                          return sliderWidget(getColor(item.type), item);
+                        },
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(
+                            height: 8,
+                          );
+                        },
+                      );
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
         ),
-      ))
+      ),
     ];
     return MaterialApp(home: Builder(builder: (BuildContext context) {
       return Scaffold(
@@ -433,6 +481,8 @@ class _MyAppState extends State<MyApp> {
                             todayList = DatabaseHelper.instance.getToday();
                             nextDateList = DatabaseHelper.instance.getNextDay();
                             allTodoList = DatabaseHelper.instance.getAllTodo();
+                            allClearList =
+                                DatabaseHelper.instance.getAllClearTodo();
                           });
                           Navigator.of(context).pop();
                         } else if (textController.text == "") {
@@ -523,6 +573,7 @@ class _MyAppState extends State<MyApp> {
                 todayList = DatabaseHelper.instance.getToday();
                 nextDateList = DatabaseHelper.instance.getNextDay();
                 allTodoList = DatabaseHelper.instance.getAllTodo();
+                allClearList = DatabaseHelper.instance.getAllClearTodo();
               });
             },
             color: Colors.red[200],
@@ -542,14 +593,15 @@ class _MyAppState extends State<MyApp> {
                 todayList = DatabaseHelper.instance.getToday();
                 nextDateList = DatabaseHelper.instance.getNextDay();
                 allTodoList = DatabaseHelper.instance.getAllTodo();
+                allClearList = DatabaseHelper.instance.getAllClearTodo();
               });
             },
             color: Colors.blue[300],
             textColor: Colors.white,
             padding: const EdgeInsets.all(8),
             shape: const CircleBorder(),
-            child: const Icon(
-              Icons.check,
+            child: Icon(
+              todo.isCompleted == 0 ? Icons.check : Icons.redo_outlined,
               size: 35,
             ),
           ),

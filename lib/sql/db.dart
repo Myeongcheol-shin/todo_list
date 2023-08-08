@@ -63,7 +63,17 @@ class DatabaseHelper {
 
   Future<List<TODO>> getAllTodo() async {
     Database db = await instance.database;
-    var todoDb = await db.query("Todo", orderBy: 'timeMill ASC');
+    var todoDb = await db.query("Todo",
+        where: 'isCompleted = 0', orderBy: 'timeMill ASC');
+    List<TODO> todoList =
+        todoDb.isNotEmpty ? todoDb.map((e) => TODO.fromMap(e)).toList() : [];
+    return todoList;
+  }
+
+  Future<List<TODO>> getAllClearTodo() async {
+    Database db = await instance.database;
+    var todoDb = await db.query("Todo",
+        where: 'isCompleted = 1', orderBy: 'timeMill ASC');
     List<TODO> todoList =
         todoDb.isNotEmpty ? todoDb.map((e) => TODO.fromMap(e)).toList() : [];
     return todoList;
