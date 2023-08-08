@@ -6,6 +6,7 @@ import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:todo_list/sql/db.dart';
 import 'package:todo_list/sql/todo_db.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:io';
 
 void main() {
@@ -434,6 +435,33 @@ class _MyAppState extends State<MyApp> {
                             allTodoList = DatabaseHelper.instance.getAllTodo();
                           });
                           Navigator.of(context).pop();
+                        } else if (textController.text == "") {
+                          Fluttertoast.showToast(
+                              msg: "Task cannot be blank",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red[400],
+                              textColor: Colors.white,
+                              fontSize: 16.0);
+                        } else if (nowDateTime == null) {
+                          Fluttertoast.showToast(
+                              msg: "Date cannot be blank",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red[400],
+                              textColor: Colors.white,
+                              fontSize: 16.0);
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: "Please select type",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red[400],
+                              textColor: Colors.white,
+                              fontSize: 16.0);
                         }
                       },
                       child: Container(
