@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:todo_list/models/Todo.dart';
+import 'package:todo_list/screen/custom_checkbox.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:todo_list/sql/db.dart';
+import 'package:todo_list/sql/todo_db.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,20 +19,69 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  String? selectedType = "";
   final textController = TextEditingController();
+
+  Future<List<TODO>> todayList = Future.value([]);
+  Future<List<TODO>> nextDateList = Future.value([]);
+  Future<List<TODO>> allTodoList = Future.value([]);
+
+  @override
+  void initState() {
+    super.initState();
+    todayList = DatabaseHelper.instance.getToday();
+    nextDateList = DatabaseHelper.instance.getNextDay();
+    allTodoList = DatabaseHelper.instance.getAllTodo();
+  }
+
+  Color getColor(String type) {
+    switch (type) {
+      case 'Work':
+        return const Color.fromARGB(255, 255, 141, 141);
+      case 'Study':
+        return const Color.fromARGB(255, 209, 250, 121);
+      case 'Personal':
+        return const Color.fromARGB(255, 252, 226, 153);
+      case 'Meeting':
+        return const Color.fromARGB(255, 255, 222, 198);
+      case 'Assignment':
+        return const Color.fromARGB(255, 172, 196, 255);
+    }
+    return const Color.fromARGB(255, 172, 196, 255);
+  }
+
+  DateTime? nowDateTime = DateTime.now();
+  List<Todo> typeList = [
+    Todo(
+      TypeName: "Work",
+      isSelected: false,
+      backgroundColor: const Color.fromARGB(255, 255, 141, 141),
+    ),
+    Todo(
+      TypeName: "Study",
+      isSelected: false,
+      backgroundColor: const Color.fromARGB(255, 209, 250, 121),
+    ),
+    Todo(
+      TypeName: "Personal",
+      isSelected: false,
+      backgroundColor: const Color.fromARGB(255, 252, 226, 153),
+    ),
+    Todo(
+      TypeName: "Meeting",
+      isSelected: false,
+      backgroundColor: const Color.fromARGB(255, 255, 222, 198),
+    ),
+    Todo(
+      TypeName: "Assignment",
+      isSelected: false,
+      backgroundColor: const Color.fromARGB(255, 172, 196, 255),
+    ),
+  ];
+
   int _selectedIndex = 0;
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black);
-  static final List<Widget> _widgetOptions = <Widget>[
-    const Text(
-      'Index 0: Home',
-      style: optionStyle,
-    ),
-    const Text(
-      'Index 1: List',
-      style: optionStyle,
-    ),
-  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -34,12 +89,149 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  dbChange() {}
   @override
   Widget build(BuildContext context) {
-    List<bool> itemExpanded = List.generate(10, (index) => false);
-    List<double> dragStartX =
-        List.generate(itemExpanded.length, (index) => 0.0);
-
+    final List<Widget> widgetOptions = <Widget>[
+      Expanded(
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "today",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                FutureBuilder(
+                  future: todayList,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final tl = snapshot.data!;
+                      if (tl.isEmpty) {
+                        return Container(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: const Text(
+                              "Today, There's No Schedule \u{1F601}",
+                              style: TextStyle(fontSize: 18),
+                            ));
+                      }
+                      return ListView.separated(
+                        padding: const EdgeInsets.only(top: 15),
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: tl.length,
+                        itemBuilder: (context, index) {
+                          final item = tl[index];
+                          return sliderWidget(getColor(item.type), item);
+                        },
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(
+                            height: 8,
+                          );
+                        },
+                      );
+                    } else {
+                      return const CircularProgressIndicator();
+                    }
+                  },
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                const Text(
+                  "tomorrow",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                FutureBuilder(
+                  future: nextDateList,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final tl = snapshot.data!;
+                      if (tl.isEmpty) {
+                        return Container(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: const Text(
+                              "Tomorrow, There's No Schedule \u{1F606}",
+                              style: TextStyle(fontSize: 18),
+                            ));
+                      }
+                      return ListView.separated(
+                        padding: const EdgeInsets.only(top: 15),
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: tl.length,
+                        itemBuilder: (context, index) {
+                          final item = tl[index];
+                          return sliderWidget(getColor(item.type), item);
+                        },
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(
+                            height: 8,
+                          );
+                        },
+                      );
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      Expanded(
+          child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        child: FutureBuilder(
+          future: allTodoList,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final todo = snapshot.data!;
+              if (todo.isEmpty) {
+                return const Center(
+                  child: Text(
+                      "No schedule \u{1F602}\nPlease add a new schedule",
+                      style: TextStyle(fontSize: 22)),
+                );
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "ALL Task",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                  ),
+                  ListView.separated(
+                      padding: const EdgeInsets.only(top: 15),
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        final item = todo[index];
+                        return sliderWidget(getColor(item.type), item);
+                      },
+                      separatorBuilder: (context, index) {
+                        return const SizedBox(
+                          height: 8,
+                        );
+                      },
+                      itemCount: todo.length),
+                ],
+              );
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
+      ))
+    ];
     return MaterialApp(home: Builder(builder: (BuildContext context) {
       return Scaffold(
           bottomNavigationBar: BottomNavigationBar(
@@ -96,29 +288,21 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ],
               ),
-              const SizedBox(
-                height: 30,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 15),
-                    child: Text(
-                      "today",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  sliderWidget(),
-                ],
-              ),
+              widgetOptions.elementAt(_selectedIndex)
             ],
           ));
     }));
   }
 
   void showTodoModalBottomSheet(BuildContext context) {
+    setState(() {
+      selectedType = "";
+      textController.text = "";
+      nowDateTime = null;
+      for (var element in typeList) {
+        element.isSelected = false;
+      }
+    });
     showModalBottomSheet(
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
@@ -127,25 +311,147 @@ class _MyAppState extends State<MyApp> {
         isScrollControlled: true,
         builder: (context) {
           return Container(
+            width: double.infinity,
+            color: Colors.black,
             margin: const EdgeInsets.symmetric(horizontal: 30),
-            height: MediaQuery.of(context).size.height * 0.6,
+            height: MediaQuery.of(context).size.height * 0.45,
             child: Scaffold(
               body: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(
                     height: 45,
                     width: double.maxFinite,
                   ),
-                  const Text("Add New Task",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                      )),
+                  const Center(
+                    child: Text("Add New Task",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                        )),
+                  ),
                   TextField(
-                    style: const TextStyle(fontSize: 20),
+                    decoration: const InputDecoration(
+                        hintText: 'Input New Task!',
+                        hintStyle: TextStyle(fontSize: 14)),
+                    style: const TextStyle(fontSize: 18),
                     controller: textController,
-                  )
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: 30,
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (context, index) {
+                        final item = typeList[index];
+                        return CustomTypeCheckbox(
+                            isChecked: item.isSelected,
+                            onTap: () {
+                              setState(() {
+                                for (var element in typeList) {
+                                  element.isSelected = false;
+                                }
+                                item.isSelected = !item.isSelected;
+                                selectedType = item.TypeName;
+                              });
+                            },
+                            backgroundColor: item.backgroundColor,
+                            typeName: item.TypeName);
+                      },
+                      itemCount: typeList.length,
+                      separatorBuilder: (context, index) {
+                        return const SizedBox(
+                          width: 5,
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      DateTime? dateTime =
+                          await showOmniDateTimePicker(context: context);
+                      setState(() {
+                        nowDateTime = dateTime;
+                      });
+                    },
+                    child: const Row(
+                      children: [
+                        Text("Choose Date",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                            )),
+                        Icon(
+                          Icons.arrow_drop_down_sharp,
+                          size: 30,
+                        )
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Text(
+                        nowDateTime != null
+                            ? DateFormat.yMMMd('en_US')
+                                .add_jm()
+                                .format(nowDateTime!)
+                            : "",
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                        )),
+                  ),
+                  const Spacer(
+                    flex: 1,
+                  ),
+                  TextButton(
+                      onPressed: () {
+                        if (textController.text != "" &&
+                            nowDateTime != null &&
+                            selectedType != null) {
+                          DatabaseHelper.instance.add(TODO(
+                              isCompleted: 0,
+                              contents: textController.text,
+                              day: nowDateTime!.day,
+                              month: nowDateTime!.month,
+                              timeMill: nowDateTime!.millisecondsSinceEpoch,
+                              type: selectedType!,
+                              random: DateTime.now().millisecondsSinceEpoch,
+                              year: nowDateTime!.year));
+                          setState(() {
+                            todayList = DatabaseHelper.instance.getToday();
+                            nextDateList = DatabaseHelper.instance.getNextDay();
+                            allTodoList = DatabaseHelper.instance.getAllTodo();
+                          });
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        margin: const EdgeInsets.only(bottom: 20),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            gradient: LinearGradient(colors: [
+                              Colors.blue[200]!,
+                              Colors.green[200]!,
+                            ])),
+                        child: const Text(
+                          "Add Task",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ))
                 ],
               ),
 
@@ -173,15 +479,22 @@ class _MyAppState extends State<MyApp> {
         });
   }
 
-  Slidable sliderWidget() {
+  Slidable sliderWidget(Color color, TODO todo) {
     return Slidable(
       key: const ValueKey(0),
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
         children: [
           MaterialButton(
-            onPressed: () {},
-            color: Colors.red[300],
+            onPressed: () {
+              DatabaseHelper.instance.remove(todo.random);
+              setState(() {
+                todayList = DatabaseHelper.instance.getToday();
+                nextDateList = DatabaseHelper.instance.getNextDay();
+                allTodoList = DatabaseHelper.instance.getAllTodo();
+              });
+            },
+            color: Colors.red[200],
             textColor: Colors.white,
             padding: const EdgeInsets.all(8),
             shape: const CircleBorder(),
@@ -191,7 +504,15 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
           MaterialButton(
-            onPressed: () {},
+            onPressed: () {
+              DatabaseHelper.instance
+                  .updateComplete(todo.random, todo.isCompleted == 1 ? 0 : 1);
+              setState(() {
+                todayList = DatabaseHelper.instance.getToday();
+                nextDateList = DatabaseHelper.instance.getNextDay();
+                allTodoList = DatabaseHelper.instance.getAllTodo();
+              });
+            },
             color: Colors.blue[300],
             textColor: Colors.white,
             padding: const EdgeInsets.all(8),
@@ -204,14 +525,13 @@ class _MyAppState extends State<MyApp> {
         ],
       ),
       child: Container(
-          margin: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: Colors.lightGreen[200],
+            color: color,
           ),
-          child: const ListTile(
-            title: Text('밥 먹기',
-                style: TextStyle(
+          child: ListTile(
+            title: Text(todo.contents,
+                style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
                     fontSize: 18)),

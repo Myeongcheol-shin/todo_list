@@ -38,6 +38,10 @@ dependencies:
   colorful_safe_area: ^1.0.0
   flutter_slidable: ^3.0.0
   flutter_animated_dialog: ^2.0.1
+  omni_datetime_picker: ^1.0.8
+  intl: ^0.18.1
+  sqflite: ^2.3.0
+  path_provider: ^2.1.0
 
 dev_dependencies:
   flutter_test:
