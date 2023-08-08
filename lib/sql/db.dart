@@ -69,9 +69,9 @@ class DatabaseHelper {
     return todoList;
   }
 
-  Future<int> remove(int random) async {
+  Future<int> remove(TODO todo) async {
     Database db = await instance.database;
-    return await db.delete('Todo', where: 'random = ?', whereArgs: [random]);
+    return await db.delete('Todo', where: 'id = ?', whereArgs: [todo.id]);
   }
 
   Future _onCreate(Database db, int version) async {

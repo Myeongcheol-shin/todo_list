@@ -6,6 +6,7 @@ import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:todo_list/sql/db.dart';
 import 'package:todo_list/sql/todo_db.dart';
+import 'dart:io';
 
 void main() {
   runApp(const MyApp());
@@ -136,7 +137,7 @@ class _MyAppState extends State<MyApp> {
                         },
                       );
                     } else {
-                      return const CircularProgressIndicator();
+                      return const Center(child: CircularProgressIndicator());
                     }
                   },
                 ),
@@ -314,7 +315,9 @@ class _MyAppState extends State<MyApp> {
             width: double.infinity,
             color: Colors.black,
             margin: const EdgeInsets.symmetric(horizontal: 30),
-            height: MediaQuery.of(context).size.height * 0.45,
+            height: Platform.isMacOS
+                ? MediaQuery.of(context).size.height * 0.6
+                : MediaQuery.of(context).size.height * 0.45,
             child: Scaffold(
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -487,7 +490,7 @@ class _MyAppState extends State<MyApp> {
         children: [
           MaterialButton(
             onPressed: () {
-              DatabaseHelper.instance.remove(todo.random);
+              DatabaseHelper.instance.remove(todo);
               setState(() {
                 todayList = DatabaseHelper.instance.getToday();
                 nextDateList = DatabaseHelper.instance.getNextDay();
