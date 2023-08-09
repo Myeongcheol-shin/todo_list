@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:todo_list/sql/db.dart';
 import 'package:todo_list/sql/todo_db.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'dart:io';
 
 void main() {
   runApp(const MyApp());
@@ -284,6 +283,7 @@ class _MyAppState extends State<MyApp> {
     ];
     return MaterialApp(home: Builder(builder: (BuildContext context) {
       return Scaffold(
+          resizeToAvoidBottomInset: false,
           bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
@@ -362,12 +362,12 @@ class _MyAppState extends State<MyApp> {
         builder: (context) {
           return Container(
             width: double.infinity,
-            color: Colors.black,
+            color: Colors.white,
             margin: const EdgeInsets.symmetric(horizontal: 30),
-            height: Platform.isMacOS
-                ? MediaQuery.of(context).size.height * 0.6
-                : MediaQuery.of(context).size.height * 0.45,
+            height: MediaQuery.of(context).size.height * 0.6,
             child: Scaffold(
+              resizeToAvoidBottomInset: false,
+
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
