@@ -44,6 +44,8 @@ dependencies:
   path_provider: ^2.1.0
   flutter_screenutil: ^5.8.4
   fluttertoast: ^8.2.2
+  material_dialogs: ^1.1.4
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
@@ -97,3 +99,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  remove_alpha_ios: true

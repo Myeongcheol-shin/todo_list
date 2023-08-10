@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:material_dialogs/widgets/buttons/icon_button.dart';
 import 'package:todo_list/models/Todo.dart';
 import 'package:todo_list/screen/custom_checkbox.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
@@ -7,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:todo_list/sql/db.dart';
 import 'package:todo_list/sql/todo_db.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:material_dialogs/material_dialogs.dart';
 
 void main() {
   runApp(const MyApp());
@@ -130,7 +132,8 @@ class _MyAppState extends State<MyApp> {
                         itemCount: tl.length,
                         itemBuilder: (context, index) {
                           final item = tl[index];
-                          return sliderWidget(getColor(item.type), item);
+                          return sliderWidget(
+                              getColor(item.type), item, context);
                         },
                         separatorBuilder: (context, index) {
                           return const SizedBox(
@@ -170,7 +173,8 @@ class _MyAppState extends State<MyApp> {
                         itemCount: tl.length,
                         itemBuilder: (context, index) {
                           final item = tl[index];
-                          return sliderWidget(getColor(item.type), item);
+                          return sliderWidget(
+                              getColor(item.type), item, context);
                         },
                         separatorBuilder: (context, index) {
                           return const SizedBox(
@@ -222,7 +226,8 @@ class _MyAppState extends State<MyApp> {
                         itemCount: tl.length,
                         itemBuilder: (context, index) {
                           final item = tl[index];
-                          return sliderWidget(getColor(item.type), item);
+                          return sliderWidget(
+                              getColor(item.type), item, context);
                         },
                         separatorBuilder: (context, index) {
                           return const SizedBox(
@@ -262,7 +267,8 @@ class _MyAppState extends State<MyApp> {
                         itemCount: tl.length,
                         itemBuilder: (context, index) {
                           final item = tl[index];
-                          return sliderWidget(getColor(item.type), item);
+                          return sliderWidget(
+                              getColor(item.type), item, context);
                         },
                         separatorBuilder: (context, index) {
                           return const SizedBox(
@@ -281,67 +287,288 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     ];
-    return MaterialApp(home: Builder(builder: (BuildContext context) {
-      return Scaffold(
-          resizeToAvoidBottomInset: false,
-          bottomNavigationBar: BottomNavigationBar(
-            items: const <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.list),
-                label: 'List',
-              ),
-            ],
-            currentIndex: _selectedIndex,
-            selectedItemColor: const Color.fromARGB(255, 255, 141, 141),
-            onTap: _onItemTapped,
-          ),
-          floatingActionButton: SizedBox(
-            width: 70,
-            height: 70,
-            child: FloatingActionButton(
-              onPressed: () {
-                showTodoModalBottomSheet(context);
-              },
-              backgroundColor: Colors.pink[100],
-              child: const Icon(
-                Icons.add_rounded,
-                size: 50,
-              ),
-            ),
-          ),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerDocked,
-          body: Column(
-            children: [
-              Stack(
-                children: <Widget>[
-                  SizedBox(
-                      width: double.infinity,
-                      height: 180,
-                      child: CustomPaint(
-                        painter: WavePainter(),
-                      )),
-                  const Positioned(
-                    left: 15,
-                    bottom: 80,
-                    child: Text(
-                      "TO-DO LIST",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800),
-                    ),
+    return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Builder(builder: (BuildContext context) {
+          return Scaffold(
+              resizeToAvoidBottomInset: false,
+              bottomNavigationBar: BottomNavigationBar(
+                items: const <BottomNavigationBarItem>[
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home),
+                    label: 'Home',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.list),
+                    label: 'List',
                   ),
                 ],
+                currentIndex: _selectedIndex,
+                selectedItemColor: const Color.fromARGB(255, 255, 141, 141),
+                onTap: _onItemTapped,
               ),
-              widgetOptions.elementAt(_selectedIndex)
-            ],
-          ));
-    }));
+              floatingActionButton: SizedBox(
+                width: 70,
+                height: 70,
+                child: FloatingActionButton(
+                  onPressed: () {
+                    showTodoModalBottomSheet(context);
+                  },
+                  backgroundColor: Colors.pink[100],
+                  child: const Icon(
+                    Icons.add_rounded,
+                    size: 50,
+                  ),
+                ),
+              ),
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.centerDocked,
+              body: Column(
+                children: [
+                  Stack(
+                    children: <Widget>[
+                      SizedBox(
+                          width: double.infinity,
+                          height: 180,
+                          child: CustomPaint(
+                            painter: WavePainter(),
+                          )),
+                      const Positioned(
+                        left: 15,
+                        bottom: 80,
+                        child: Text(
+                          "TO-DO LIST",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    ],
+                  ),
+                  widgetOptions.elementAt(_selectedIndex)
+                ],
+              ));
+        }));
+  }
+
+  void showEditModalBottomSheet(BuildContext context, TODO todo) {
+    setState(() {
+      textController.text = todo.contents;
+      selectedType = todo.type;
+      for (var element in typeList) {
+        element.TypeName == selectedType
+            ? element.isSelected = true
+            : element.isSelected = false;
+      }
+      nowDateTime = DateTime.fromMillisecondsSinceEpoch(todo.timeMill);
+    });
+    showModalBottomSheet(
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30), topRight: Radius.circular(30))),
+      isScrollControlled: true,
+      context: context,
+      builder: (context) {
+        return Container(
+          width: double.infinity,
+          color: Colors.white,
+          margin: const EdgeInsets.symmetric(horizontal: 30),
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Scaffold(
+            resizeToAvoidBottomInset: false,
+
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(
+                  height: 45,
+                  width: double.maxFinite,
+                ),
+                const Center(
+                  child: Text("Add New Task",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                      )),
+                ),
+                TextField(
+                  decoration: const InputDecoration(
+                      hintText: 'Input New Task!',
+                      hintStyle: TextStyle(fontSize: 14)),
+                  style: const TextStyle(fontSize: 18),
+                  controller: textController,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: 30,
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      final item = typeList[index];
+                      return CustomTypeCheckbox(
+                          isChecked: item.isSelected,
+                          onTap: () {
+                            setState(() {
+                              for (var element in typeList) {
+                                element.isSelected = false;
+                              }
+                              item.isSelected = !item.isSelected;
+                              selectedType = item.TypeName;
+                            });
+                          },
+                          backgroundColor: item.backgroundColor,
+                          typeName: item.TypeName);
+                    },
+                    itemCount: typeList.length,
+                    separatorBuilder: (context, index) {
+                      return const SizedBox(
+                        width: 5,
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                TextButton(
+                  onPressed: () async {
+                    DateTime? dateTime =
+                        await showOmniDateTimePicker(context: context);
+                    setState(() {
+                      nowDateTime = dateTime;
+                    });
+                  },
+                  child: const Row(
+                    children: [
+                      Text("Choose Date",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          )),
+                      Icon(
+                        Icons.arrow_drop_down_sharp,
+                        size: 30,
+                      )
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: Text(
+                      nowDateTime != null
+                          ? DateFormat.yMMMd('en_US')
+                              .add_jm()
+                              .format(nowDateTime!)
+                          : "",
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                      )),
+                ),
+                const Spacer(
+                  flex: 1,
+                ),
+                TextButton(
+                    onPressed: () {
+                      if (textController.text != "" &&
+                          nowDateTime != null &&
+                          selectedType != null) {
+                        DatabaseHelper.instance.updateTodo(TODO(
+                            isCompleted: todo.isCompleted,
+                            contents: textController.text,
+                            day: nowDateTime!.day,
+                            month: nowDateTime!.month,
+                            timeMill: nowDateTime!.millisecondsSinceEpoch,
+                            type: selectedType!,
+                            random: DateTime.now().millisecondsSinceEpoch,
+                            year: nowDateTime!.year));
+                        setState(() {
+                          todayList = DatabaseHelper.instance.getToday();
+                          nextDateList = DatabaseHelper.instance.getNextDay();
+                          allTodoList = DatabaseHelper.instance.getAllTodo();
+                          allClearList =
+                              DatabaseHelper.instance.getAllClearTodo();
+                        });
+                        Navigator.of(context).pop();
+                      } else if (textController.text == "") {
+                        Fluttertoast.showToast(
+                            msg: "Task cannot be blank",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.red[400],
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+                      } else if (nowDateTime == null) {
+                        Fluttertoast.showToast(
+                            msg: "Date cannot be blank",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.red[400],
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+                      } else {
+                        Fluttertoast.showToast(
+                            msg: "Please select type",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.red[400],
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      margin: const EdgeInsets.only(bottom: 20),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          gradient: LinearGradient(colors: [
+                            Colors.blue[200]!,
+                            Colors.green[200]!,
+                          ])),
+                      child: const Text(
+                        "Edit Task",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ))
+              ],
+            ),
+
+            floatingActionButton: Container(
+              width: 70,
+              height: 70,
+              transform: Matrix4.translationValues(0.0, -30, 0.0),
+              child: FloatingActionButton(
+                backgroundColor: Colors.pink[100],
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Icon(
+                  Icons.close_rounded,
+                  size: 50,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            // dock it to the center top (from which it is translated)
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerTop,
+          ),
+        );
+      },
+    );
   }
 
   void showTodoModalBottomSheet(BuildContext context) {
@@ -560,7 +787,7 @@ class _MyAppState extends State<MyApp> {
         });
   }
 
-  Slidable sliderWidget(Color color, TODO todo) {
+  Slidable sliderWidget(Color color, TODO todo, BuildContext context) {
     return Slidable(
       key: const ValueKey(0),
       endActionPane: ActionPane(
@@ -607,18 +834,61 @@ class _MyAppState extends State<MyApp> {
           ),
         ],
       ),
-      child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: color,
-          ),
-          child: ListTile(
-            title: Text(todo.contents,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18)),
-          )),
+      child: GestureDetector(
+        onTap: () {
+          Dialogs.materialDialog(
+              msgStyle: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500),
+              titleStyle: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600),
+              msgAlign: TextAlign.center,
+              msg:
+                  "${todo.contents}\n\n${DateFormat.yMMMd('en_US').add_jm().format(DateTime.fromMillisecondsSinceEpoch(todo.timeMill))}",
+              title: todo.type,
+              color: getColor(todo.type),
+              context: context,
+              actions: [
+                IconsButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    showEditModalBottomSheet(context, todo);
+                  },
+                  text: 'Edit',
+                  color: Colors.white,
+                  iconData: Icons.edit,
+                  textStyle: const TextStyle(color: Colors.grey),
+                  iconColor: Colors.grey,
+                ),
+                IconsButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  text: 'Close',
+                  iconData: Icons.close,
+                  color: Colors.white,
+                  textStyle: const TextStyle(color: Colors.grey),
+                  iconColor: Colors.grey,
+                ),
+              ]);
+        },
+        child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: color,
+            ),
+            child: ListTile(
+              title: Text(todo.contents,
+                  style: const TextStyle(
+                      overflow: TextOverflow.ellipsis,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18)),
+            )),
+      ),
     );
   }
 }
@@ -640,11 +910,11 @@ class WavePainter extends CustomPainter {
       ..lineTo(-width, (size.height) * 0.2)
       ..cubicTo(
         -width * 0.4,
-        (size.height - 150) * 0.4,
+        (size.height - 150) * 0.3,
         0.3,
-        (size.height) * 0.7,
+        (size.height) * 0.6,
         width,
-        (size.height - 180) * 0.8,
+        (size.height - 180) * 0.7,
       )
       ..lineTo(width, size.height);
 

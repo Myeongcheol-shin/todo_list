@@ -50,6 +50,20 @@ class DatabaseHelper {
     return todoList;
   }
 
+  Future<void> updateTodo(TODO todo) async {
+    Database db = await instance.database;
+    db.update('Todo', {
+      'type': todo.type,
+      'timeMill': todo.timeMill,
+      'year': todo.year,
+      'month': todo.month,
+      'day': todo.day,
+      'random': todo.random,
+      'isCompleted': todo.isCompleted,
+      'contents': todo.contents,
+    });
+  }
+
   Future<void> updateComplete(int random, int isCompleted) async {
     Database db = await instance.database;
     db.update(
