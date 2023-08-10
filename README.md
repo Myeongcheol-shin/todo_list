@@ -4,6 +4,12 @@
 일정 관리를 해주는 TODO-LIST 어플리케이션 입니다.  
 MacOS, Android, IOS 모두 작동이 가능합니다.
 
+## PlayStore Download
+
+<a href="https://play.google.com/store/apps/details?id=com.shino72.todo_list">
+    <img src="https://github.com/Myeongcheol-shin/todo_list/assets/82868004/b5fd5ba4-368d-42dc-8bcd-cb7ad99498b0"/>
+  </a>
+
 ## 사용 기술
 1. SQFlite - TODO를 저장하기 위하여 사용.
 
