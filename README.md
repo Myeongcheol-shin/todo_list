@@ -29,3 +29,6 @@ MacOS, Android, IOS 모두 작동이 가능합니다.
   <img src="https://github.com/Myeongcheol-shin/todo_list/assets/82868004/dd778802-9568-4c60-87e2-54daf99eba7b" align="center" width="15%">
   <img src="https://github.com/Myeongcheol-shin/todo_list/assets/82868004/aaae4228-401d-47a9-a4f2-dc3f31ada2d3" align="center" width="15%">
 </p>
+
+## Play Store download
+https://play.google.com/store/apps/details?id=com.shino72.todo_list
